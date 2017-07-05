@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script for managing NRLM's tomcat7 server
+# Script for managing tomcat server
 # Script By : Laxman Singh <laxman.nrlm@gmail.com>
 # Developed On : 8th June, 2016
 
@@ -20,23 +20,17 @@ SHUTDOWN_WAIT=30
 NO_OF_ARG=$#
 ARG=$1
 if [[ $NO_OF_ARG -eq 0 ]]; then
-	echo -e "${RED}USAGE:\tnrlm-tomcat {start|stop|status|restart|smp(show_maintenance_page)|help}${NC}"; exit 1
+	echo -e "${RED}USAGE:\ttomcat-manager {start|stop|status|restart|help}${NC}"; exit 1
 fi
 
 main() {
 	# welcome message
-	echo -e "\n${BLUE}===================================== NRLM Tomcat Manager ===============================================${NC}"
-	echo -e "${CYAN}This Script is developed only for NRLM's specific requirement for managing Tomcat"
-	echo -e "For any other Server/Platform use it at your own risk\n\t -- Laxman Singh <laxman.nrlm@gmail.com> --${NC}\n"
+	echo -e "\n${BLUE}===================================== Tomcat Manager ===============================================${NC}"
 }
 	
  
 start() {
-	smp_showing=$(is_smp_showing)
-	if [[ -n "$smp_showing" ]]; then
-		echo -e "${ORANGE}Httpd Service running. First stopping it${NC}"
-		service httpd stop
-	fi
+	
 	pid=$(tomcat_pid)
 	if [[ -n "$pid" ]]; then
 		echo -e "${RED}Tomcat already running with pid ($pid). to restart use (restart) option.${NC}"
@@ -54,10 +48,6 @@ start() {
 }
 
 status() {
-	smp_showing=$(is_smp_showing)
-        if [[ -n "$smp_showing" ]]; then
-                echo -e "${ORANGE}Httpd Service running.${NC}"
-        fi
 	pid=$(tomcat_pid)
         if [[ -n "$pid" ]]; then
 		echo -e "${GREEN}Tomcat is running with pid :${ORANGE} \t" $pid"${NC}"
@@ -95,27 +85,18 @@ restart() {
 	stop
 	start
 }
-
 show_help() {
 	echo -e "${GREEN}===================== USAGE =============================================================================\n"
-	echo -e "This program is being developed for the NRLM's tomcat server management/content uploading/maintenance etc."
+	
 	echo -e "It accepts following parameters as:"
 	echo -e "start\tIt starts the tomcat server\nstop\tStops the tomcat server\nstatus\tShows the status of tomcat server"
-	echo -e "restart\tRestarts the tomcat service\nsmp\tShows the maintenance page at http://nrlm.gov.in"
+	echo -e "restart\tRestarts the tomcat service"
 	echo -e "help\tShows the help${NC}"
 }
 
-smp() {
-	smp_showing=$(is_smp_showing)
-        if [[ -n "$smp_showing" ]]; then
-                echo -e "${ORANGE}Httpd Service already running hence maintenace page already showing.${NC}"
-        else
-		stop
-		echo -e "${GREEN}Starting httpd service to show maintenance page."
-		service httpd start
-	fi
-}
-
+	
+		
+	
 tomcat_pid() {
         echo `ps -ef | grep $TOMCAT_DIR | grep -v grep | tr -s " "|cut -d" " -f2`
 }
@@ -123,10 +104,6 @@ tomcat_pid() {
 terminate() {
 	echo -e "${RED}Terminating Tomcat forcefully ....${NC}"
 	kill -9 $(tomcat_pid)
-}
-
-is_smp_showing() {
-	echo `ps -ef | grep httpd | grep -v grep | tr -s " "|cut -d" " -f2`
 }
 
 # execute program
@@ -141,13 +118,12 @@ case $ARG in
 		status;;
 	"restart" )
 		restart;;
-	"smp" )
-		smp;;
+	
 	"help" )
 		show_help;;
 	* )
 		echo -e "${RED}Invalid Parameter..";
-		echo -e "${RED}USAGE:\tnrlm-tomcat {start|stop|status|restart|smp(show_maintenance_page)|help}${NC}";;
+		echo -e "${RED}USAGE:\tnrlm-tomcat {start|stop|status|restart|help}${NC}";;
 esac
 
 echo -e "${ORANGE}==========================================================================================================${NC}\n\n"
